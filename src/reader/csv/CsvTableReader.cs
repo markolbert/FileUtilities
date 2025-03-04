@@ -7,7 +7,7 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
 {
     public Type ImportedType => typeof( DataRecord );
 
-    public HashSet<int> GetReplacementIds() => EntityAdjuster?.GetReplacementIds() ?? [];
+    public HashSet<int> GetReplacementIds() => PropertiesAdjuster?.GetReplacementIds() ?? [];
 
     public IEnumerable<DataRecord> GetData( ImportContext context )
     {
@@ -89,22 +89,22 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
     IAsyncEnumerable<object> ITableReader.GetObjectDataAsync( ImportContext context, CancellationToken ctx ) =>
         GetDataAsync( context, ctx );
 
-    bool ITableReader.SetAdjuster( IEntityAdjuster? adjuster )
+    bool ITableReader.SetAdjuster( IPropertiesAdjuster? adjuster )
     {
         if( adjuster == null )
         {
-            EntityAdjuster = null;
+            PropertiesAdjuster = null;
             return true;
         }
 
-        if( adjuster is not IEntityAdjuster<DataRecord> castAdjuster )
+        if( adjuster is not IPropertiesAdjuster<DataRecord> castAdjuster )
         {
             Logger?.InvalidTypeAssignment( adjuster.GetType(),
-                                           typeof( IEntityAdjuster<DataRecord> ) );
+                                           typeof( IPropertiesAdjuster<DataRecord> ) );
             return false;
         }
 
-        EntityAdjuster = castAdjuster;
+        PropertiesAdjuster = castAdjuster;
         return true;
     }
 

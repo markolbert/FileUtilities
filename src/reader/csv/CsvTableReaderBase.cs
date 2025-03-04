@@ -31,7 +31,7 @@ public class CsvTableReaderBase<TEntity>
     protected int CurrentRecord { get; private set; }
 
     public IRecordFilter<TEntity>? Filter { get; set; }
-    public IEntityAdjuster<TEntity>? EntityAdjuster { get; set; }
+    public IPropertiesAdjuster<TEntity>? PropertiesAdjuster { get; set; }
 
     protected virtual bool Initialize() => true;
 
@@ -47,7 +47,7 @@ public class CsvTableReaderBase<TEntity>
         if( !Filter?.Initialize() ?? false )
             return false;
 
-        if( !EntityAdjuster?.Initialize( context ) ?? false )
+        if( !PropertiesAdjuster?.Initialize( context ) ?? false )
             return false;
 
         // finally, complete whatever custom reader initialization
@@ -96,7 +96,7 @@ public class CsvTableReaderBase<TEntity>
 
         curRecord = CreateDataRecord( headers );
 
-        if( !EntityAdjuster?.AdjustEntity( curRecord ) ?? false )
+        if( !PropertiesAdjuster?.AdjustEntity( curRecord ) ?? false )
             return ProcessRecordResult.Failed;
 
         if( Filter != null && !Filter.Include( curRecord ) )
@@ -124,7 +124,7 @@ public class CsvTableReaderBase<TEntity>
     protected virtual void OnReadingEnded()
     {
         // save whatever changes/updates were recorded
-        EntityAdjuster?.SaveAdjustmentRecords();
+        PropertiesAdjuster?.SaveAdjustmentRecords();
     }
 
     public void Dispose()

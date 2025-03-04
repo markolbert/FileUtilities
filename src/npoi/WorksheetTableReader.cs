@@ -106,9 +106,9 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
 
     public Type ImportedType => typeof( TEntity );
     public IRecordFilter<TEntity>? Filter { get; set; }
-    public IEntityAdjuster<TEntity>? EntityAdjuster { get; set; }
+    public IPropertiesAdjuster<TEntity>? PropertiesAdjuster { get; set; }
 
-    public HashSet<int> GetReplacementIds() => EntityAdjuster?.GetReplacementIds() ?? [];
+    public HashSet<int> GetReplacementIds() => PropertiesAdjuster?.GetReplacementIds() ?? [];
 
     public IEnumerable<TEntity> GetData( TContext context )
     {
@@ -132,7 +132,7 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
                 Logger?.FailedToSetCellValue(column.ColumnNumber, rowNum);
             }
 
-            if ( !EntityAdjuster?.AdjustEntity( entity ) ?? false )
+            if ( !PropertiesAdjuster?.AdjustEntity( entity ) ?? false )
                 yield break;
 
             if( Filter == null || Filter.Include( entity ) )
@@ -257,7 +257,7 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
     protected virtual void CompleteImport()
     {
         // save whatever changes/updates were recorded
-        EntityAdjuster?.SaveAdjustmentRecords();
+        PropertiesAdjuster?.SaveAdjustmentRecords();
     }
 
     public void Dispose()
@@ -291,21 +291,21 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
         return AsyncEnumerable.Empty<object>();
     }
 
-    bool ITableReader.SetAdjuster( IEntityAdjuster? adjuster )
+    bool ITableReader.SetAdjuster( IPropertiesAdjuster? adjuster )
     {
         if( adjuster == null )
         {
-            EntityAdjuster = null;
+            PropertiesAdjuster = null;
             return true;
         }
 
-        if( adjuster is not IEntityAdjuster<TEntity> castAdjuster )
+        if( adjuster is not IPropertiesAdjuster<TEntity> castAdjuster )
         {
-            Logger?.InvalidTypeAssignment( adjuster.GetType(), typeof( IEntityAdjuster<TEntity> ) );
+            Logger?.InvalidTypeAssignment( adjuster.GetType(), typeof( IPropertiesAdjuster<TEntity> ) );
             return false;
         }
 
-        EntityAdjuster = castAdjuster;
+        PropertiesAdjuster = castAdjuster;
         return true;
     }
 

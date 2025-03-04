@@ -13,7 +13,7 @@ public class CsvTableReader<TEntity>( ILoggerFactory? loggerFactory = null )
 
     public Type ImportedType => typeof( TEntity );
 
-    public HashSet<int> GetReplacementIds() => EntityAdjuster?.GetReplacementIds() ?? [];
+    public HashSet<int> GetReplacementIds() => PropertiesAdjuster?.GetReplacementIds() ?? [];
 
     public IEnumerable<TEntity> GetData( ImportContext context )
     {
@@ -23,34 +23,13 @@ public class CsvTableReader<TEntity>( ILoggerFactory? loggerFactory = null )
         foreach( var record in CsvReader!.GetRecords<TEntity>()
                                          .Where( x => Filter == null || Filter.Include( x ) ) )
         {
-            if( !EntityAdjuster?.AdjustEntity( record ) ?? false )
+            if( !PropertiesAdjuster?.AdjustEntity( record ) ?? false )
                 yield break;
 
             yield return record;
         }
 
         OnReadingEnded();
-    }
-
-    protected override bool BeginGetData( ImportContext context )
-    {
-        if( !base.BeginGetData( context ) )
-            return false;
-
-        if( !InitializeClassMap( context ) )
-            return false;
-
-        try
-        {
-            CsvReader!.Context.RegisterClassMap( _classMap! );
-        }
-        catch( Exception ex )
-        {
-            Logger?.InvalidClassMap( typeof( TEntity ).Name, ex.Message );
-            return false;
-        }
-
-        return true;
     }
 
     public async IAsyncEnumerable<TEntity> GetDataAsync(
@@ -65,13 +44,34 @@ public class CsvTableReader<TEntity>( ILoggerFactory? loggerFactory = null )
                                                .Where( x => Filter == null || Filter.Include( x ) )
                                                .WithCancellation( ctx ) )
         {
-            if( !EntityAdjuster?.AdjustEntity( record ) ?? false )
+            if( !PropertiesAdjuster?.AdjustEntity( record ) ?? false )
                 yield break;
 
             yield return record;
         }
 
         OnReadingEnded();
+    }
+
+    protected override bool BeginGetData(ImportContext context)
+    {
+        if (!base.BeginGetData(context))
+            return false;
+
+        if (!InitializeClassMap(context))
+            return false;
+
+        try
+        {
+            CsvReader!.Context.RegisterClassMap(_classMap!);
+        }
+        catch (Exception ex)
+        {
+            Logger?.InvalidClassMap(typeof(TEntity).Name, ex.Message);
+            return false;
+        }
+
+        return true;
     }
 
     private bool InitializeClassMap( ImportContext context )
@@ -124,21 +124,21 @@ public class CsvTableReader<TEntity>( ILoggerFactory? loggerFactory = null )
     ) =>
         GetDataAsync( context, ctx );
 
-    bool ITableReader.SetAdjuster( IEntityAdjuster? adjuster )
+    bool ITableReader.SetAdjuster( IPropertiesAdjuster? adjuster )
     {
         if( adjuster == null )
         {
-            EntityAdjuster = null;
+            PropertiesAdjuster = null;
             return true;
         }
 
-        if( adjuster is not IEntityAdjuster<TEntity> castAdjuster )
+        if( adjuster is not IPropertiesAdjuster<TEntity> castAdjuster )
         {
-            Logger?.InvalidTypeAssignment( adjuster.GetType(), typeof( IEntityAdjuster<TEntity> ) );
+            Logger?.InvalidTypeAssignment( adjuster.GetType(), typeof( IPropertiesAdjuster<TEntity> ) );
             return false;
         }
 
-        EntityAdjuster = castAdjuster;
+        PropertiesAdjuster = castAdjuster;
         return true;
     }
 

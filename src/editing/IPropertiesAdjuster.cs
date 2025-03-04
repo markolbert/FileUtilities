@@ -1,6 +1,6 @@
 ﻿namespace J4JSoftware.FileUtilities;
 
-public interface IEntityAdjuster
+public interface IPropertiesAdjuster
 {
     Type EntityType { get; }
     bool IsValid { get; }
@@ -14,7 +14,7 @@ public interface IEntityAdjuster
     void SaveAdjustmentRecords();
 }
 
-public interface IEntityAdjuster<in TEntity> : IEntityAdjuster
+public interface IPropertiesAdjuster<in TEntity> : IPropertiesAdjuster
 {
     bool AdjustEntity( TEntity entity );
 

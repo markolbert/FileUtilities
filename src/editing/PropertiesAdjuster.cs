@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace J4JSoftware.FileUtilities;
 
-public abstract class EntityAdjuster<TEntity> : IEntityAdjuster<TEntity>
+public abstract class PropertiesAdjuster<TEntity> : IPropertiesAdjuster<TEntity>
     where TEntity : class
 {
     private readonly Dictionary<int, HashSet<string>> _propsChanged = [];
@@ -22,7 +22,7 @@ public abstract class EntityAdjuster<TEntity> : IEntityAdjuster<TEntity>
     private Dictionary<int, TEntity>? _replEntities;
     private bool _replacementsDefined;
 
-    protected EntityAdjuster(
+    protected PropertiesAdjuster(
         Expression<Func<TEntity, int>> keyExpr,
         string nullText,
         ILoggerFactory? loggerFactory
@@ -280,7 +280,7 @@ public abstract class EntityAdjuster<TEntity> : IEntityAdjuster<TEntity>
         UpdateRecorder?.SaveChanges();
     }
 
-    bool IEntityAdjuster.AdjustEntity( object entity )
+    bool IPropertiesAdjuster.AdjustEntity( object entity )
     {
         if( entity is TEntity castEntity )
             return AdjustEntity( castEntity );

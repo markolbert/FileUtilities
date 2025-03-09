@@ -7,7 +7,7 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
 {
     public Type ImportedType => typeof( DataRecord );
 
-    public HashSet<int> GetReplacementIds() => PropertiesAdjuster?.GetReplacementIds() ?? [];
+    public HashSet<int> GetReplacementIds() => ReplacementAdjuster?.GetReplacementIds() ?? [];
 
     public IEnumerable<DataRecord> GetData( ImportContext context )
     {
@@ -15,14 +15,25 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
             yield break;
 
         var headerRead = false;
-        var headers = new List<string>();
+        List<string>? headers = null;
 
         while( CsvReader!.Read() )
         {
-            if( !ProcessHeader( context, ref headerRead, ref headers ) )
-                yield break;
+            if( !headerRead && context.HasHeaders )
+            {
+                var headerResult = TryGetHeaders();
 
-            switch( ProcessRecord( context, headers, out var curRecord ) )
+                if( !headerResult.succeeded )
+                    yield break;
+                else headers = headerResult.headers;
+
+                headerRead = true;
+                continue;
+            }
+
+            headers ??= CreateDefaultHeaders();
+
+            switch ( ProcessRecord( headers, out var curRecord ) )
             {
                 case ProcessRecordResult.Okay:
                     yield return curRecord;
@@ -55,10 +66,21 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
 
         while( await CsvReader!.ReadAsync() )
         {
-            if( !ProcessHeader( context, ref headerRead, ref headers ) )
-                yield break;
+            if (!headerRead && context.HasHeaders)
+            {
+                var headerResult = TryGetHeaders();
 
-            switch( ProcessRecord( context, headers, out var curRecord ) )
+                if (!headerResult.succeeded)
+                    yield break;
+                else headers = headerResult.headers;
+
+                headerRead = true;
+                continue;
+            }
+
+            headers ??= CreateDefaultHeaders();
+
+            switch ( ProcessRecord( headers, out var curRecord ) )
             {
                 case ProcessRecordResult.Okay:
                     yield return curRecord;
@@ -77,6 +99,60 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
         OnReadingEnded();
     }
 
+    // only called if CsvReader is defined and ImportContext specifies that the stream has headers
+    private (bool succeeded, List<string>? headers) TryGetHeaders()
+    {
+        if( CsvReader!.ReadHeader() )
+            return ( true, CsvReader.HeaderRecord!.ToList() );
+
+        Logger?.StreamHeaderUnreadable();
+        return ( false, null );
+    }
+
+    // only called if CsvReader is defined
+    private List<string> CreateDefaultHeaders()
+    {
+        var retVal = new List<string>();
+
+        for( var idx = 0; idx < CsvReader!.ColumnCount; idx++ )
+        {
+            retVal.Add( $"Field{idx + 1}" );
+        }
+
+        return retVal;
+    }
+
+    private ProcessRecordResult ProcessRecord(List<string> headers, out DataRecord curRecord)
+    {
+        CurrentRecord++;
+
+        curRecord = CreateDataRecord(headers);
+
+        if (!AlgorithmicAdjuster?.AdjustEntity(curRecord) ?? false)
+            return ProcessRecordResult.Failed;
+
+        if (Filter != null && !Filter.Include(curRecord))
+            return ProcessRecordResult.FilteredOut;
+
+        return ProcessRecordResult.Okay;
+    }
+
+    // CsvReader will always be non-null when this is called
+    private DataRecord CreateDataRecord(List<string> headers)
+    {
+        var retVal = new DataRecord(CurrentRecord, headers);
+
+        for (var colIdx = 0; colIdx < CsvReader!.ColumnCount; colIdx++)
+        {
+            if (retVal.AddValue(colIdx, CsvReader[colIdx]!))
+                continue;
+
+            Logger?.DuplicateColumnReadFromStream(colIdx, CurrentRecord);
+        }
+
+        return retVal;
+    }
+
     bool ITableReader.TryGetData(
         ImportContext context,
         out IEnumerable<object> data
@@ -89,22 +165,42 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
     IAsyncEnumerable<object> ITableReader.GetObjectDataAsync( ImportContext context, CancellationToken ctx ) =>
         GetDataAsync( context, ctx );
 
-    bool ITableReader.SetAdjuster( IPropertiesAdjuster? adjuster )
+    bool ITableReader.SetAlgorithmicAdjuster( IAlgorithmicAdjuster? adjuster )
     {
         if( adjuster == null )
         {
-            PropertiesAdjuster = null;
+            AlgorithmicAdjuster = null;
             return true;
         }
 
-        if( adjuster is not IPropertiesAdjuster<DataRecord> castAdjuster )
+        if( adjuster is not IAlgorithmicAdjuster<DataRecord> castAdjuster )
         {
             Logger?.InvalidTypeAssignment( adjuster.GetType(),
-                                           typeof( IPropertiesAdjuster<DataRecord> ) );
+                                           typeof( IAlgorithmicAdjuster<DataRecord> ) );
             return false;
         }
 
-        PropertiesAdjuster = castAdjuster;
+        AlgorithmicAdjuster = castAdjuster;
+        return true;
+    }
+
+    bool ITableReader.SetReplacementAdjuster(IReplacementAdjuster? adjuster)
+    {
+        if (adjuster == null)
+        {
+            ReplacementAdjuster = null;
+            return true;
+        }
+
+        if (adjuster is not IReplacementAdjuster<DataRecord> castAdjuster)
+        {
+            Logger?.InvalidTypeAssignment(adjuster.GetType(),
+                                          typeof(IAlgorithmicAdjuster<DataRecord>));
+            return false;
+        }
+
+        ReplacementAdjuster = castAdjuster;
+
         return true;
     }
 

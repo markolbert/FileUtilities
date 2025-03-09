@@ -5,7 +5,8 @@ public interface ITableReader : IDisposable
     Type ImportedType { get; }
 
     bool SetFilter( IRecordFilter? filter );
-    bool SetAdjuster( IPropertiesAdjuster? adjuster );
+    bool SetAlgorithmicAdjuster( IAlgorithmicAdjuster? adjuster );
+    bool SetReplacementAdjuster( IReplacementAdjuster? adjuster );
 
     HashSet<int> GetReplacementIds();
 
@@ -18,7 +19,9 @@ public interface ITableReader<TEntity, in TContext> : ITableReader
     where TContext : ImportContext
 {
     IRecordFilter<TEntity>? Filter { get; set; }
-    IPropertiesAdjuster<TEntity>? PropertiesAdjuster { get; set; }
+    
+    IAlgorithmicAdjuster<TEntity>? AlgorithmicAdjuster { get; set; }
+    IReplacementAdjuster<TEntity>? ReplacementAdjuster { get; set; }
 
     IEnumerable<TEntity> GetData( TContext context );
     IAsyncEnumerable<TEntity> GetDataAsync( TContext context, CancellationToken ctx );

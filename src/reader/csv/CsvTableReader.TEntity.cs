@@ -13,7 +13,7 @@ public class CsvTableReader<TEntity>( ILoggerFactory? loggerFactory = null )
 
     public Type ImportedType => typeof( TEntity );
 
-    public HashSet<int> GetReplacementIds() => PropertiesAdjuster?.GetReplacementIds() ?? [];
+    public HashSet<int> GetReplacementIds() => ReplacementAdjuster?.GetReplacementIds() ?? [];
 
     public IEnumerable<TEntity> GetData( ImportContext context )
     {
@@ -23,7 +23,7 @@ public class CsvTableReader<TEntity>( ILoggerFactory? loggerFactory = null )
         foreach( var record in CsvReader!.GetRecords<TEntity>()
                                          .Where( x => Filter == null || Filter.Include( x ) ) )
         {
-            if( !PropertiesAdjuster?.AdjustEntity( record ) ?? false )
+            if( !AlgorithmicAdjuster?.AdjustEntity( record ) ?? false )
                 yield break;
 
             yield return record;
@@ -44,7 +44,7 @@ public class CsvTableReader<TEntity>( ILoggerFactory? loggerFactory = null )
                                                .Where( x => Filter == null || Filter.Include( x ) )
                                                .WithCancellation( ctx ) )
         {
-            if( !PropertiesAdjuster?.AdjustEntity( record ) ?? false )
+            if( !AlgorithmicAdjuster?.AdjustEntity( record ) ?? false )
                 yield break;
 
             yield return record;
@@ -124,21 +124,40 @@ public class CsvTableReader<TEntity>( ILoggerFactory? loggerFactory = null )
     ) =>
         GetDataAsync( context, ctx );
 
-    bool ITableReader.SetAdjuster( IPropertiesAdjuster? adjuster )
+    bool ITableReader.SetAlgorithmicAdjuster( IAlgorithmicAdjuster? adjuster )
     {
         if( adjuster == null )
         {
-            PropertiesAdjuster = null;
+            AlgorithmicAdjuster = null;
             return true;
         }
 
-        if( adjuster is not IPropertiesAdjuster<TEntity> castAdjuster )
+        if( adjuster is not IAlgorithmicAdjuster<TEntity> castAdjuster )
         {
-            Logger?.InvalidTypeAssignment( adjuster.GetType(), typeof( IPropertiesAdjuster<TEntity> ) );
+            Logger?.InvalidTypeAssignment( adjuster.GetType(), typeof( IAlgorithmicAdjuster<TEntity> ) );
             return false;
         }
 
-        PropertiesAdjuster = castAdjuster;
+        AlgorithmicAdjuster = castAdjuster;
+        return true;
+    }
+
+    bool ITableReader.SetReplacementAdjuster( IReplacementAdjuster? adjuster )
+    {
+        if( adjuster == null )
+        {
+            AlgorithmicAdjuster = null;
+            return true;
+        }
+
+        if( adjuster is not IReplacementAdjuster<TEntity> castAdjuster )
+        {
+            Logger?.InvalidTypeAssignment( adjuster.GetType(), typeof( IAlgorithmicAdjuster<TEntity> ) );
+            return false;
+        }
+
+        ReplacementAdjuster = castAdjuster;
+
         return true;
     }
 

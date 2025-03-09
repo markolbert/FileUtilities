@@ -106,9 +106,11 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
 
     public Type ImportedType => typeof( TEntity );
     public IRecordFilter<TEntity>? Filter { get; set; }
-    public IPropertiesAdjuster<TEntity>? PropertiesAdjuster { get; set; }
+    
+    public IAlgorithmicAdjuster<TEntity>? AlgorithmicAdjuster { get; set; }
+    public IReplacementAdjuster<TEntity>? ReplacementAdjuster { get; set; }
 
-    public HashSet<int> GetReplacementIds() => PropertiesAdjuster?.GetReplacementIds() ?? [];
+    public HashSet<int> GetReplacementIds() => ReplacementAdjuster?.GetReplacementIds() ?? [];
 
     public IEnumerable<TEntity> GetData( TContext context )
     {
@@ -132,7 +134,12 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
                 Logger?.FailedToSetCellValue(column.ColumnNumber, rowNum);
             }
 
-            if ( !PropertiesAdjuster?.AdjustEntity( entity ) ?? false )
+            // try replacing properties first
+            if( ReplacementAdjuster != null && !ReplacementAdjuster.AdjustEntity( entity ) )
+                yield break;
+
+            // then try updating them algorithmically
+            if ( AlgorithmicAdjuster != null && !AlgorithmicAdjuster.AdjustEntity( entity ) )
                 yield break;
 
             if( Filter == null || Filter.Include( entity ) )
@@ -257,7 +264,8 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
     protected virtual void CompleteImport()
     {
         // save whatever changes/updates were recorded
-        PropertiesAdjuster?.SaveAdjustmentRecords();
+        ReplacementAdjuster?.SaveAdjustmentRecords();
+        AlgorithmicAdjuster?.SaveAdjustmentRecords();
     }
 
     public void Dispose()
@@ -291,21 +299,40 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
         return AsyncEnumerable.Empty<object>();
     }
 
-    bool ITableReader.SetAdjuster( IPropertiesAdjuster? adjuster )
+    bool ITableReader.SetAlgorithmicAdjuster( IAlgorithmicAdjuster? adjuster )
     {
         if( adjuster == null )
         {
-            PropertiesAdjuster = null;
+            AlgorithmicAdjuster = null;
             return true;
         }
 
-        if( adjuster is not IPropertiesAdjuster<TEntity> castAdjuster )
+        if( adjuster is not IAlgorithmicAdjuster<TEntity> castAdjuster )
         {
-            Logger?.InvalidTypeAssignment( adjuster.GetType(), typeof( IPropertiesAdjuster<TEntity> ) );
+            Logger?.InvalidTypeAssignment( adjuster.GetType(), typeof( IAlgorithmicAdjuster<TEntity> ) );
             return false;
         }
 
-        PropertiesAdjuster = castAdjuster;
+        AlgorithmicAdjuster = castAdjuster;
+        return true;
+    }
+
+    bool ITableReader.SetReplacementAdjuster(IReplacementAdjuster? adjuster)
+    {
+        if (adjuster == null)
+        {
+            ReplacementAdjuster = null;
+            return true;
+        }
+
+        if (adjuster is not IReplacementAdjuster<TEntity> castAdjuster)
+        {
+            Logger?.InvalidTypeAssignment(adjuster.GetType(), typeof(IAlgorithmicAdjuster<TEntity>));
+            return false;
+        }
+
+        ReplacementAdjuster = castAdjuster;
+
         return true;
     }
 

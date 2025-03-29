@@ -185,7 +185,7 @@ internal static partial class InternalLogMessages
         [ CallerMemberName ] string caller = ""
     );
 
-    [ LoggerMessage( LogLevel.Warning, "{caller}: unneeded record change file '{path}' specified" ) ]
+    [ LoggerMessage( LogLevel.Warning, "{caller}: unneeded tweaks file for {importerType} ({path}) specified" ) ]
     internal static partial void UnneededTweaksFile(
         this ILogger logger,
         Type importerType,

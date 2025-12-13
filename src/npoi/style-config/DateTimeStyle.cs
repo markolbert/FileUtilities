@@ -4,8 +4,6 @@ public class DateTimeStyle : BaseStyle
 {
     public const string DefaultDateSeparator = "/";
 
-    private int _secDecPlaces;
-
     public MonthDayTimeFormat DateFormat { get; set; } = MonthDayTimeFormat.Numbers;
     public DateSequence DateSequence { get; set; } = DateSequence.MonthDayYear;
     public bool DateLeadingZero { get; set; }
@@ -20,7 +18,7 @@ public class DateTimeStyle : BaseStyle
 
     public int SecondsDecimalPlaces
     {
-        get => _secDecPlaces;
-        set => _secDecPlaces = value < 0 ? 0 : value;
+        get;
+        set => field = value < 0 ? 0 : value;
     }
 }

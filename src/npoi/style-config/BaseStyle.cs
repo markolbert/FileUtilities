@@ -14,9 +14,6 @@ public class BaseStyle
     public const string DefaultFontName = "Segoe UI";
     public const int DefaultFontHeightInPoints = 12;
 
-    private string _fontName = DefaultFontName;
-    private int _fontHeightInPts = DefaultFontHeightInPoints;
-
     protected BaseStyle()
     {
     }
@@ -25,19 +22,19 @@ public class BaseStyle
 
     public string FontName
     {
-        get => _fontName;
+        get;
 
         set
         {
             value = value.Trim();
 
-            _fontName = string.IsNullOrEmpty( value ) ? DefaultFontName : value;
+            field = string.IsNullOrEmpty( value ) ? DefaultFontName : value;
         }
-    }
+    } = DefaultFontName;
 
     public int FontHeightInPoints
     {
-        get => _fontHeightInPts;
-        set => _fontHeightInPts = value <= 0 ? DefaultFontHeightInPoints : value;
-    }
+        get;
+        set => field = value <= 0 ? DefaultFontHeightInPoints : value;
+    } = DefaultFontHeightInPoints;
 }

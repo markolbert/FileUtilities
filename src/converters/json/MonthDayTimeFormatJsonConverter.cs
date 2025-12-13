@@ -21,7 +21,7 @@ public class MonthDayTimeFormatJsonConverter( ILoggerFactory? loggerFactory ) : 
 
         _logger?.UnsupportedEnumValue( typeof( MonthDayTimeFormat ),
                                        text ?? string.Empty,
-                                       MonthDayTimeFormat.Numbers.ToString() );
+                                       nameof( MonthDayTimeFormat.Numbers ) );
 
         return MonthDayTimeFormat.Numbers;
     }

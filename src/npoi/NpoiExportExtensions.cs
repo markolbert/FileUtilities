@@ -5,23 +5,25 @@ namespace J4JSoftware.FileUtilities;
 
 public static class NpoiExportExtensions
 {
-    private static ITableCreatorInternal<TEntity> CastToInternal<TEntity>( this ITableCreator<TEntity> instance )
+    extension<TEntity>( ITableCreator<TEntity> instance )
         where TEntity : class
     {
-        if( instance is ITableCreatorInternal<TEntity> retVal )
-            return retVal;
+        private ITableCreatorInternal<TEntity> CastToInternal()
+        {
+            if( instance is ITableCreatorInternal<TEntity> retVal )
+                return retVal;
 
-        throw new FileUtilityException( typeof( NpoiExportExtensions ),
-                                        nameof( CastToInternal ),
-                                        $"{nameof( instance )} is not an instance of {typeof( ITableCreatorInternal )}" );
-    }
+            throw new FileUtilityException( typeof( NpoiExportExtensions ),
+                                            nameof( CastToInternal ),
+                                            $"{nameof( instance )} is not an instance of {typeof( ITableCreatorInternal )}" );
+        }
 
-    public static ITableCreator<TEntity> SheetName<TEntity>( this ITableCreator<TEntity> tableCreator, string name )
-        where TEntity : class
-    {
-        tableCreator.SheetName = name;
+        public ITableCreator<TEntity> SheetName( string name )
+        {
+            instance.SheetName = name;
 
-        return tableCreator;
+            return instance;
+        }
     }
 
     public static IExportableColumn<TEntity, TProp> Style<TEntity, TProp>(

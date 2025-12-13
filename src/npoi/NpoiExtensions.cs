@@ -46,42 +46,45 @@ public static class NpoiExtensions
         return colText.ToString();
     }
 
-    public static bool AppliesToType( this AggregateFunction aggFunc, Type type )
+    extension( AggregateFunction aggFunc )
     {
-        var usageAttr = aggFunc.GetAggregateFunctionUsageAttribute();
-        return usageAttr != null && usageAttr.IsSupported( type );
-    }
-
-    public static string GetFunctionText( this AggregateFunction aggFunc )
-    {
-        var usageAttr = aggFunc.GetAggregateFunctionUsageAttribute();
-        return usageAttr == null ? string.Empty : usageAttr.FunctionText;
-    }
-
-    public static string GetLabel( this AggregateFunction aggFunc )
-    {
-        var usageAttr = aggFunc.GetAggregateFunctionUsageAttribute();
-        return usageAttr == null ? string.Empty : usageAttr.Label;
-    }
-
-    private static AggregateFunctionUsageAttribute? GetAggregateFunctionUsageAttribute( this AggregateFunction aggFunc )
-    {
-        foreach( var memberInfo in typeof( AggregateFunction )
-                                  .GetMembers()
-                                  .Where( mi => mi.MemberType == MemberTypes.Field ) )
+        public bool AppliesToType( Type type )
         {
-            if( !Enum.TryParse( typeof( AggregateFunction ), memberInfo.Name, out var rawFlag ) )
-                continue;
-
-            var curFlag = (AggregateFunction) rawFlag;
-
-            if( curFlag != aggFunc )
-                continue;
-
-            return memberInfo.GetCustomAttribute<AggregateFunctionUsageAttribute>();
+            var usageAttr = aggFunc.GetAggregateFunctionUsageAttribute();
+            return usageAttr != null && usageAttr.IsSupported( type );
         }
 
-        return null;
+        public string GetFunctionText()
+        {
+            var usageAttr = aggFunc.GetAggregateFunctionUsageAttribute();
+            return usageAttr == null ? string.Empty : usageAttr.FunctionText;
+        }
+
+        public string GetLabel()
+        {
+            var usageAttr = aggFunc.GetAggregateFunctionUsageAttribute();
+            return usageAttr == null ? string.Empty : usageAttr.Label;
+        }
+
+        private AggregateFunctionUsageAttribute? GetAggregateFunctionUsageAttribute()
+        {
+            foreach( var memberInfo in typeof( AggregateFunction )
+                                      .GetMembers()
+                                      .Where( mi => mi.MemberType == MemberTypes.Field ) )
+            {
+                if( !Enum.TryParse( typeof( AggregateFunction ), memberInfo.Name, out var rawFlag ) )
+                    continue;
+
+                var curFlag = (AggregateFunction) rawFlag;
+
+                if( curFlag != aggFunc )
+                    continue;
+
+                return memberInfo.GetCustomAttribute<AggregateFunctionUsageAttribute>();
+            }
+
+            return null;
+        }
     }
 
     public static ISheet ClearSheet( this IWorkbook workbook, string sheetName, ILogger? logger = null )

@@ -121,8 +121,8 @@ public static class Extensions
         params Type[] reqdInterfaces
     )
     {
-        if( reqdInterfaces.Length == 0 )
-            reqdInterfaces = [typeof( ILoggerFactory )];
+        //if( reqdInterfaces.Length == 0 )
+        //    reqdInterfaces = [typeof( ILoggerFactory )];
 
         ConstructorInfo? curInfo = null;
         var allowsLogging = false;

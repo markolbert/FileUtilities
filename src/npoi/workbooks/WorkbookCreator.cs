@@ -112,6 +112,11 @@ public class WorkbookCreator(
         // to avoid file corruption when updating existing sheets
         using var writeStream = new MemoryStream();
         _workbook.Write( writeStream );
+
+        var dirPath = Path.GetDirectoryName( filePath );
+        if( !string.IsNullOrEmpty( dirPath ) )
+            Directory.CreateDirectory( dirPath );
+
         File.WriteAllBytes( filePath, writeStream.ToArray() );
 
         _workbook.Close();

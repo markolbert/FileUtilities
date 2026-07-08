@@ -53,21 +53,21 @@ public class CsvTableReader<TEntity>( ILoggerFactory? loggerFactory = null )
         OnReadingEnded();
     }
 
-    protected override bool BeginGetData(ImportContext context)
+    protected override bool BeginGetData( ImportContext context )
     {
-        if (!base.BeginGetData(context))
+        if( !base.BeginGetData( context ) )
             return false;
 
-        if (!InitializeClassMap(context))
+        if( !InitializeClassMap( context ) )
             return false;
 
         try
         {
-            CsvReader!.Context.RegisterClassMap(_classMap!);
+            CsvReader!.Context.RegisterClassMap( _classMap! );
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
-            Logger?.InvalidClassMap(typeof(TEntity).Name, ex.Message);
+            Logger?.InvalidClassMap( typeof( TEntity ).Name, ex.Message );
             return false;
         }
 

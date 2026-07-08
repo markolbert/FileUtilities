@@ -7,7 +7,7 @@ public interface IReplacementAdjuster : IAdjuster
 
 public interface IReplacementAdjuster<in TEntity> : IReplacementAdjuster
 {
-    bool AdjustEntity(TEntity entity);
+    bool AdjustEntity( TEntity entity );
 
     void RecordAdjustment(
         TEntity entity,

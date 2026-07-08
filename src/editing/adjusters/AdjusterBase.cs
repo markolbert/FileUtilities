@@ -16,7 +16,7 @@ public abstract class Adjuster<TEntity> : IAdjuster
     protected ILoggerFactory? LoggerFactory { get; }
     protected ILogger? Logger { get; }
 
-    public Type EntityType => typeof(TEntity);
+    public Type EntityType => typeof( TEntity );
     public bool IsValid { get; protected set; }
     public IUpdateRecorder? UpdateRecorder { get; set; }
 
@@ -33,7 +33,7 @@ public abstract class Adjuster<TEntity> : IAdjuster
         string? reason = null
     )
     {
-        UpdateRecorder?.PropertyValueChanged(entity, field, source, originalValue, adjValue, reason);
+        UpdateRecorder?.PropertyValueChanged( entity, field, source, originalValue, adjValue, reason );
     }
 
     public virtual void SaveAdjustmentRecords()
@@ -41,14 +41,13 @@ public abstract class Adjuster<TEntity> : IAdjuster
         UpdateRecorder?.SaveChanges();
     }
 
-    bool IAdjuster.AdjustEntity(object entity)
+    bool IAdjuster.AdjustEntity( object entity )
     {
-        if (entity is TEntity castEntity)
-            return AdjustEntity(castEntity);
+        if( entity is TEntity castEntity )
+            return AdjustEntity( castEntity );
 
-        Logger?.InvalidTypeAssignment(entity.GetType(), EntityType);
+        Logger?.InvalidTypeAssignment( entity.GetType(), EntityType );
 
         return false;
     }
-
 }

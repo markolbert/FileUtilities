@@ -3,7 +3,7 @@ using NPOI.SS.UserModel;
 
 namespace J4JSoftware.FileUtilities;
 
-public class NpoiDateConverter(ILoggerFactory? loggerFactory) : NpoiConverter<DateTime>(loggerFactory)
+public class NpoiDateConverter( ILoggerFactory? loggerFactory ) : NpoiConverter<DateTime>( loggerFactory )
 {
-    public override DateTime Convert(ICell cell) => cell.DateCellValue ?? DateTime.MinValue;
+    public override DateTime Convert( ICell cell ) => cell.DateCellValue ?? DateTime.MinValue;
 }

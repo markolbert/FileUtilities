@@ -19,7 +19,7 @@ public interface ITableReader<TEntity, in TContext> : ITableReader
     where TContext : ImportContext
 {
     IRecordFilter<TEntity>? Filter { get; set; }
-    
+
     IAlgorithmicAdjuster<TEntity>? AlgorithmicAdjuster { get; set; }
     IReplacementAdjuster<TEntity>? ReplacementAdjuster { get; set; }
 

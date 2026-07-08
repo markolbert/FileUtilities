@@ -10,5 +10,5 @@ public interface INpoiConverter
 
 public interface INpoiConverter<out T> : INpoiConverter
 {
-    T Convert(ICell cell);
+    T Convert( ICell cell );
 }

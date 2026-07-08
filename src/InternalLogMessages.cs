@@ -93,7 +93,7 @@ internal static partial class InternalLogMessages
         [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: could not register ClassMap for {type}, message was '{mesg}'")]
+    [ LoggerMessage( LogLevel.Error, "{caller}: could not register ClassMap for {type}, message was '{mesg}'" ) ]
     internal static partial void InvalidClassMap(
         this ILogger logger,
         string type,
@@ -103,50 +103,50 @@ internal static partial class InternalLogMessages
 
     #region file locator related
 
-    [LoggerMessage(LogLevel.Trace, "{caller}: starting validation of path {path} ")]
+    [ LoggerMessage( LogLevel.Trace, "{caller}: starting validation of path {path} " ) ]
     internal static partial void PathValidationStart(
         this ILogger logger,
         string path,
         [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Trace, "{caller}: added required file extension {ext} ")]
+    [ LoggerMessage( LogLevel.Trace, "{caller}: added required file extension {ext} " ) ]
     internal static partial void AddedRequiredExtension(
         this ILogger logger,
         string ext,
-        [CallerMemberName] string caller = ""
+        [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Trace, "{caller}: found file {path} ")]
+    [ LoggerMessage( LogLevel.Trace, "{caller}: found file {path} " ) ]
     internal static partial void FoundFile(
         this ILogger logger,
         string path,
-        [CallerMemberName] string caller = ""
+        [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Trace, "{caller}: checking {folder} for {path}")]
+    [ LoggerMessage( LogLevel.Trace, "{caller}: checking {folder} for {path}" ) ]
     internal static partial void CheckAlternativeLocation(
         this ILogger logger,
         string folder,
         string path,
-        [CallerMemberName] string caller = ""
+        [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: file {path} is not accessible" )]
+    [ LoggerMessage( LogLevel.Error, "{caller}: file {path} is not accessible" ) ]
     internal static partial void FileNotAccessible(
         this ILogger logger,
         string path,
         [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: unsupported operating system, {mesg}")]
+    [ LoggerMessage( LogLevel.Error, "{caller}: unsupported operating system, {mesg}" ) ]
     internal static partial void UnsupportedOs(
         this ILogger logger,
         string mesg,
-        [CallerMemberName] string caller = ""
+        [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage( LogLevel.Trace, "{caller}: invalid path, {mesg}")]
+    [ LoggerMessage( LogLevel.Trace, "{caller}: invalid path, {mesg}" ) ]
     internal static partial void InvalidPath(
         this ILogger logger,
         string mesg,
@@ -157,7 +157,7 @@ internal static partial class InternalLogMessages
 
     #region file-related
 
-    [LoggerMessage( LogLevel.Warning,
+    [ LoggerMessage( LogLevel.Warning,
                      Message =
                          "{caller}: Could not read file '{file}', message was '{mesg}'; deleting and re-creating instead" ) ]
     internal static partial void WorkbookFileUnreadable(
@@ -404,14 +404,14 @@ internal static partial class InternalLogMessages
         [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: Undefined sheet name")]
+    [ LoggerMessage( LogLevel.Error, "{caller}: Undefined sheet name" ) ]
     internal static partial void NoSheetName(
         this ILogger logger,
-        [CallerMemberName] string caller = ""
+        [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage( Level = LogLevel.Error,
-                    Message = "{caller}: Could not find ISheet {sheetName}, message was '{mesg}'" ) ]
+    [ LoggerMessage( Level = LogLevel.Error,
+                     Message = "{caller}: Could not find ISheet {sheetName}, message was '{mesg}'" ) ]
     internal static partial void MissingSheetWithMessage(
         this ILogger logger,
         string sheetName,
@@ -641,10 +641,11 @@ internal static partial class InternalLogMessages
         Type type,
         string prop,
         string mesg,
-    [ CallerMemberName ] string caller = ""
+        [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: NPOI field {npoiName} cannot be mapped to {importedType}::{importedName} ({propType})")]
+    [ LoggerMessage( LogLevel.Error,
+                     "{caller}: NPOI field {npoiName} cannot be mapped to {importedType}::{importedName} ({propType})" ) ]
     internal static partial void InvalidNpoiMapping(
         this ILogger logger,
         string importedName,
@@ -654,46 +655,47 @@ internal static partial class InternalLogMessages
         [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: duplicate NPOI field {fieldName}")]
+    [ LoggerMessage( LogLevel.Error, "{caller}: duplicate NPOI field {fieldName}" ) ]
     internal static partial void DuplicateNpoiField(
         this ILogger logger,
         string fieldName,
         [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: NPOI field {npoiField} does not exist")]
+    [ LoggerMessage( LogLevel.Error, "{caller}: NPOI field {npoiField} does not exist" ) ]
     internal static partial void UnmappedNpoiField(
         this ILogger logger,
         string npoiField,
         [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: unsupported NPOI type {type}")]
+    [ LoggerMessage( LogLevel.Error, "{caller}: unsupported NPOI type {type}" ) ]
     internal static partial void UnsupportedNpoiType(
         this ILogger logger,
         string type,
         [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: {type} does not implement INpoiConverter, ignoring property")]
+    [ LoggerMessage( LogLevel.Error, "{caller}: {type} does not implement INpoiConverter, ignoring property" ) ]
     internal static partial void InvalidNpoiConverter(
         this ILogger logger,
         string type,
-        [CallerMemberName] string caller = ""
+        [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: no INpoiConverter for type {type}, ignoring property")]
+    [ LoggerMessage( LogLevel.Error, "{caller}: no INpoiConverter for type {type}, ignoring property" ) ]
     internal static partial void UndefinedNpoiConverter(
         this ILogger logger,
         string type,
-        [CallerMemberName] string caller = ""
+        [ CallerMemberName ] string caller = ""
     );
 
-    [LoggerMessage(LogLevel.Error, "{caller}: could not create instance of {type}, message was '{mesg}', ignoring property")]
+    [ LoggerMessage( LogLevel.Error,
+                     "{caller}: could not create instance of {type}, message was '{mesg}', ignoring property" ) ]
     internal static partial void NpoiConverterNotCreatable(
         this ILogger logger,
         string type,
         string mesg,
-        [CallerMemberName] string caller = ""
+        [ CallerMemberName ] string caller = ""
     );
 }

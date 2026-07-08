@@ -11,7 +11,7 @@ public class ImportedColumn<TEntity> : IImportedColumn<TEntity>
     private readonly ILogger? _logger;
 
     public ImportedColumn(
-        string colNameInSheet, 
+        string colNameInSheet,
         PropertyInfo propInfo,
         INpoiConverter converter,
         ILoggerFactory? loggerFactory
@@ -55,10 +55,10 @@ public class ImportedColumn<TEntity> : IImportedColumn<TEntity>
 
     bool IImportedColumn.SetValue( ISheet sheet, object entity, ICell cell )
     {
-        if (entity is TEntity castEntity)
-            return SetValue(sheet, castEntity, cell);
+        if( entity is TEntity castEntity )
+            return SetValue( sheet, castEntity, cell );
 
-        _logger?.UnexpectedType(typeof(TEntity), entity.GetType());
+        _logger?.UnexpectedType( typeof( TEntity ), entity.GetType() );
 
         return false;
     }

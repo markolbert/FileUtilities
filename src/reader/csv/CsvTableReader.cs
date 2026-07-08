@@ -25,7 +25,8 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
 
                 if( !headerResult.succeeded )
                     yield break;
-                else headers = headerResult.headers;
+
+                headers = headerResult.headers;
 
                 headerRead = true;
                 continue;
@@ -33,7 +34,7 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
 
             headers ??= CreateDefaultHeaders();
 
-            switch ( ProcessRecord( headers, out var curRecord ) )
+            switch( ProcessRecord( headers, out var curRecord ) )
             {
                 case ProcessRecordResult.Okay:
                     yield return curRecord;
@@ -66,13 +67,14 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
 
         while( await CsvReader!.ReadAsync() )
         {
-            if (!headerRead && context.HasHeaders)
+            if( !headerRead && context.HasHeaders )
             {
                 var headerResult = TryGetHeaders();
 
-                if (!headerResult.succeeded)
+                if( !headerResult.succeeded )
                     yield break;
-                else headers = headerResult.headers;
+
+                headers = headerResult.headers;
 
                 headerRead = true;
                 continue;
@@ -80,7 +82,7 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
 
             headers ??= CreateDefaultHeaders();
 
-            switch ( ProcessRecord( headers, out var curRecord ) )
+            switch( ProcessRecord( headers, out var curRecord ) )
             {
                 case ProcessRecordResult.Okay:
                     yield return curRecord;
@@ -122,32 +124,32 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
         return retVal;
     }
 
-    private ProcessRecordResult ProcessRecord(List<string> headers, out DataRecord curRecord)
+    private ProcessRecordResult ProcessRecord( List<string> headers, out DataRecord curRecord )
     {
         CurrentRecord++;
 
-        curRecord = CreateDataRecord(headers);
+        curRecord = CreateDataRecord( headers );
 
-        if (!AlgorithmicAdjuster?.AdjustEntity(curRecord) ?? false)
+        if( !AlgorithmicAdjuster?.AdjustEntity( curRecord ) ?? false )
             return ProcessRecordResult.Failed;
 
-        if (Filter != null && !Filter.Include(curRecord))
+        if( Filter != null && !Filter.Include( curRecord ) )
             return ProcessRecordResult.FilteredOut;
 
         return ProcessRecordResult.Okay;
     }
 
     // CsvReader will always be non-null when this is called
-    private DataRecord CreateDataRecord(List<string> headers)
+    private DataRecord CreateDataRecord( List<string> headers )
     {
-        var retVal = new DataRecord(CurrentRecord, headers);
+        var retVal = new DataRecord( CurrentRecord, headers );
 
-        for (var colIdx = 0; colIdx < CsvReader!.ColumnCount; colIdx++)
+        for( var colIdx = 0; colIdx < CsvReader!.ColumnCount; colIdx++ )
         {
-            if (retVal.AddValue(colIdx, CsvReader[colIdx]!))
+            if( retVal.AddValue( colIdx, CsvReader[ colIdx ]! ) )
                 continue;
 
-            Logger?.DuplicateColumnReadFromStream(colIdx, CurrentRecord);
+            Logger?.DuplicateColumnReadFromStream( colIdx, CurrentRecord );
         }
 
         return retVal;
@@ -184,18 +186,18 @@ public class CsvTableReader( ILoggerFactory? loggerFactory = null )
         return true;
     }
 
-    bool ITableReader.SetReplacementAdjuster(IReplacementAdjuster? adjuster)
+    bool ITableReader.SetReplacementAdjuster( IReplacementAdjuster? adjuster )
     {
-        if (adjuster == null)
+        if( adjuster == null )
         {
             ReplacementAdjuster = null;
             return true;
         }
 
-        if (adjuster is not IReplacementAdjuster<DataRecord> castAdjuster)
+        if( adjuster is not IReplacementAdjuster<DataRecord> castAdjuster )
         {
-            Logger?.InvalidTypeAssignment(adjuster.GetType(),
-                                          typeof(IAlgorithmicAdjuster<DataRecord>));
+            Logger?.InvalidTypeAssignment( adjuster.GetType(),
+                                           typeof( IAlgorithmicAdjuster<DataRecord> ) );
             return false;
         }
 

@@ -31,7 +31,7 @@ public class CsvTableReaderBase<TEntity>
     protected int CurrentRecord { get; set; }
 
     public IRecordFilter<TEntity>? Filter { get; set; }
-    
+
     public IAlgorithmicAdjuster<TEntity>? AlgorithmicAdjuster { get; set; }
     public IReplacementAdjuster<TEntity>? ReplacementAdjuster { get; set; }
 

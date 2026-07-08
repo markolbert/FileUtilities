@@ -24,7 +24,7 @@ public abstract class ReplacementAdjuster<TEntity> : Adjuster<TEntity>, IReplace
         Expression<Func<TEntity, int>> keyExpr,
         ILoggerFactory? loggerFactory
     )
-    :base(loggerFactory)
+        : base( loggerFactory )
     {
         _keyGetter = keyExpr.Compile();
         _keyName = keyExpr.GetPropertyInfo().Name;
@@ -38,35 +38,35 @@ public abstract class ReplacementAdjuster<TEntity> : Adjuster<TEntity>, IReplace
         if( string.IsNullOrEmpty( context.ReplacementsPath ) )
             return false;
 
-        if (!File.Exists(context.ReplacementsPath))
+        if( !File.Exists( context.ReplacementsPath ) )
         {
-            Logger?.FileNotFound(context.ReplacementsPath);
+            Logger?.FileNotFound( context.ReplacementsPath );
             return false;
         }
 
         try
         {
-            if (!LoadPropsChanged(context.ReplacementsPath))
+            if( !LoadPropsChanged( context.ReplacementsPath ) )
                 return false;
 
-            if (!TryLoadEntities(context.ReplacementsPath))
+            if( !TryLoadEntities( context.ReplacementsPath ) )
                 return false;
 
             var masterPropsChanged = new HashSet<string>();
-            masterPropsChanged.UnionWith(_propsChanged.SelectMany(kvp => kvp.Value));
+            masterPropsChanged.UnionWith( _propsChanged.SelectMany( kvp => kvp.Value ) );
 
             // we never want to change the key field
-            masterPropsChanged.Remove(_keyName);
+            masterPropsChanged.Remove( _keyName );
 
-            foreach (var propInfo in _entityProps.Where(x => masterPropsChanged.Contains(x.Name)))
+            foreach( var propInfo in _entityProps.Where( x => masterPropsChanged.Contains( x.Name ) ) )
             {
-                _getters.Add(propInfo.Name, e => propInfo.GetValue(e));
-                _setters.Add(propInfo.Name, (e, value) => propInfo.SetValue(e, value));
+                _getters.Add( propInfo.Name, e => propInfo.GetValue( e ) );
+                _setters.Add( propInfo.Name, ( e, value ) => propInfo.SetValue( e, value ) );
             }
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
-            Logger?.Error($"Could not parse '{context.ReplacementsPath}', message was '{ex.Message}'");
+            Logger?.Error( $"Could not parse '{context.ReplacementsPath}', message was '{ex.Message}'" );
 
             return false;
         }

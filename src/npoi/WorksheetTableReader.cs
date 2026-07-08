@@ -21,82 +21,84 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
         LoggerFactory = loggerFactory;
         Logger = LoggerFactory?.CreateLogger( GetType() );
 
-        CreateColumnMappings(converters, loggerFactory);
+        CreateColumnMappings( converters, loggerFactory );
     }
 
-    private void CreateColumnMappings(IEnumerable<INpoiConverter>? converters, ILoggerFactory? loggerFactory )
+    private void CreateColumnMappings( IEnumerable<INpoiConverter>? converters, ILoggerFactory? loggerFactory )
     {
         var builtInConverters = new Dictionary<Type, INpoiConverter>();
 
-        foreach (var builtIn in converters ?? [])
+        foreach( var builtIn in converters ?? [] )
         {
-            if (builtInConverters.TryGetValue(builtIn.TargetType, out var _))
+            if( builtInConverters.TryGetValue( builtIn.TargetType, out _ ) )
             {
-                Logger?.SkippedDuplicate(builtIn.TargetType.Name, "built-in INpoiConverter");
+                Logger?.SkippedDuplicate( builtIn.TargetType.Name, "built-in INpoiConverter" );
                 continue;
             }
 
-            builtInConverters.Add(builtIn.TargetType, builtIn);
+            builtInConverters.Add( builtIn.TargetType, builtIn );
         }
 
         var customConverters = new Dictionary<Type, INpoiConverter>();
 
-        foreach (var mappingInfo in typeof(TEntity).GetProperties()
-                                                     .Where(p => p is { CanRead: true, CanWrite: true }
+        foreach( var mappingInfo in typeof( TEntity ).GetProperties()
+                                                     .Where( p => p is { CanRead: true, CanWrite: true }
                                                               && p.GetSetMethod() != null
-                                                              && p.GetCustomAttribute<NpoiFieldAttribute>() != null)
-                                                     .Select(p => new
-                                                     {
-                                                         PropertyInfo = p,
-                                                         NpoiAttribute =
+                                                              && p.GetCustomAttribute<NpoiFieldAttribute>() != null )
+                                                     .Select( p => new
+                                                      {
+                                                          PropertyInfo = p,
+                                                          NpoiAttribute =
                                                               p.GetCustomAttribute<NpoiFieldAttribute>()!
-                                                     }))
+                                                      } ) )
         {
             var converterType = mappingInfo.NpoiAttribute.ConverterType;
 
-            if (converterType == null)
+            if( converterType == null )
             {
                 // see if the property type is one of the built-in converters
-                if (builtInConverters.TryGetValue(mappingInfo.PropertyInfo.PropertyType, out var temp))
-                    _columns.Add(new ImportedColumn<TEntity>(mappingInfo.NpoiAttribute.NpoiFieldName,
-                                                                 mappingInfo.PropertyInfo,
-                                                                 temp,
-                                                                 loggerFactory));
-                else Logger?.UndefinedNpoiConverter(mappingInfo.PropertyInfo.PropertyType.Name);
+                if( builtInConverters.TryGetValue( mappingInfo.PropertyInfo.PropertyType, out var temp ) )
+                {
+                    _columns.Add( new ImportedColumn<TEntity>( mappingInfo.NpoiAttribute.NpoiFieldName,
+                                                               mappingInfo.PropertyInfo,
+                                                               temp,
+                                                               loggerFactory ) );
+                }
+                else Logger?.UndefinedNpoiConverter( mappingInfo.PropertyInfo.PropertyType.Name );
 
                 continue;
             }
 
             // see if the converter type is already created
-            if (customConverters.TryGetValue(converterType, out var temp2))
+            if( customConverters.TryGetValue( converterType, out var temp2 ) )
             {
-                _columns.Add(new ImportedColumn<TEntity>(mappingInfo.NpoiAttribute.NpoiFieldName,
-                                                             mappingInfo.PropertyInfo,
-                                                             temp2,
-                                                             loggerFactory));
+                _columns.Add( new ImportedColumn<TEntity>( mappingInfo.NpoiAttribute.NpoiFieldName,
+                                                           mappingInfo.PropertyInfo,
+                                                           temp2,
+                                                           loggerFactory ) );
                 continue;
             }
 
             // make sure the converter type actually is an INpoiConverter
-            if (converterType.GetInterface(nameof(INpoiConverter)) == null)
+            if( converterType.GetInterface( nameof( INpoiConverter ) ) == null )
             {
-                Logger?.UndefinedNpoiConverter(mappingInfo.PropertyInfo.PropertyType.Name);
+                Logger?.UndefinedNpoiConverter( mappingInfo.PropertyInfo.PropertyType.Name );
                 continue;
             }
 
             try
             {
-                var converter = (INpoiConverter)Activator.CreateInstance(converterType)!;
-                customConverters.Add(converterType, converter);
+                var converter = (INpoiConverter) Activator.CreateInstance( converterType )!;
+                customConverters.Add( converterType, converter );
 
-                _columns.Add(new ImportedColumn<TEntity>(mappingInfo.NpoiAttribute.NpoiFieldName,
+                _columns.Add( new ImportedColumn<TEntity>( mappingInfo.NpoiAttribute.NpoiFieldName,
                                                            mappingInfo.PropertyInfo,
                                                            converter,
-                                                           loggerFactory));
+                                                           loggerFactory ) );
             }
-            catch (Exception ex)
+            catch( Exception ex )
             {
-                Logger?.NpoiConverterNotCreatable(converterType.Name, ex.Message);
+                Logger?.NpoiConverterNotCreatable( converterType.Name, ex.Message );
             }
         }
     }
@@ -106,7 +108,7 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
 
     public Type ImportedType => typeof( TEntity );
     public IRecordFilter<TEntity>? Filter { get; set; }
-    
+
     public IAlgorithmicAdjuster<TEntity>? AlgorithmicAdjuster { get; set; }
     public IReplacementAdjuster<TEntity>? ReplacementAdjuster { get; set; }
 
@@ -122,16 +124,16 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
             var row = sheet.GetRow( rowNum );
             var entity = new TEntity();
 
-            foreach (var column in _columns.Where(c=>c.ColumnNumber>0  ))
+            foreach( var column in _columns.Where( c => c.ColumnNumber > 0 ) )
             {
-                var cell = row.GetCell(column.ColumnNumber);
-                if (cell == null)
+                var cell = row.GetCell( column.ColumnNumber );
+                if( cell == null )
                     continue;
 
-                if (column.SetValue(sheet, entity, cell))
+                if( column.SetValue( sheet, entity, cell ) )
                     continue;
 
-                Logger?.FailedToSetCellValue(column.ColumnNumber, rowNum);
+                Logger?.FailedToSetCellValue( column.ColumnNumber, rowNum );
             }
 
             // try replacing properties first
@@ -139,7 +141,7 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
                 yield break;
 
             // then try updating them algorithmically
-            if ( AlgorithmicAdjuster != null && !AlgorithmicAdjuster.AdjustEntity( entity ) )
+            if( AlgorithmicAdjuster != null && !AlgorithmicAdjuster.AdjustEntity( entity ) )
                 yield break;
 
             if( Filter == null || Filter.Include( entity ) )
@@ -215,9 +217,9 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
 
         for( var colNum = 0; colNum < headerRow.LastCellNum; colNum++ )
         {
-            var cell = headerRow.GetCell(colNum);
+            var cell = headerRow.GetCell( colNum );
 
-            if (cell == null )
+            if( cell == null )
                 continue;
 
             npoiFields.Add( cell.StringCellValue );
@@ -227,8 +229,8 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
 
         // check for duplicate fields in the NPOI table
         foreach( var dupeField in npoiFields
-                                .GroupBy( n => n, n => n, ( n, e ) => new { NpoiField = n, Count = e.Count() } )
-                                .Where( x => x.Count > 1 ) )
+                                 .GroupBy( n => n, n => n, ( n, e ) => new { NpoiField = n, Count = e.Count() } )
+                                 .Where( x => x.Count > 1 ) )
         {
             Logger?.DuplicateNpoiField( dupeField.NpoiField );
             retVal = false;
@@ -239,8 +241,10 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
         {
             for( var colIdx = 0; colIdx < npoiFields.Count; colIdx++ )
             {
-                var mappedCol = _columns.FirstOrDefault(
-                    c => c.ColumnNameInSheet.Equals(npoiFields[colIdx], StringComparison.OrdinalIgnoreCase ) );
+                var mappedCol =
+                    _columns.FirstOrDefault( c => c.ColumnNameInSheet.Equals(
+                                                 npoiFields[ colIdx ],
+                                                 StringComparison.OrdinalIgnoreCase ) );
 
                 if( mappedCol != null )
                     mappedCol.ColumnNumber = colIdx;
@@ -317,17 +321,17 @@ public class WorksheetTableReader<TEntity, TContext> : IWorksheetTableReader<TEn
         return true;
     }
 
-    bool ITableReader.SetReplacementAdjuster(IReplacementAdjuster? adjuster)
+    bool ITableReader.SetReplacementAdjuster( IReplacementAdjuster? adjuster )
     {
-        if (adjuster == null)
+        if( adjuster == null )
         {
             ReplacementAdjuster = null;
             return true;
         }
 
-        if (adjuster is not IReplacementAdjuster<TEntity> castAdjuster)
+        if( adjuster is not IReplacementAdjuster<TEntity> castAdjuster )
         {
-            Logger?.InvalidTypeAssignment(adjuster.GetType(), typeof(IAlgorithmicAdjuster<TEntity>));
+            Logger?.InvalidTypeAssignment( adjuster.GetType(), typeof( IAlgorithmicAdjuster<TEntity> ) );
             return false;
         }
 

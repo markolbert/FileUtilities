@@ -8,10 +8,10 @@ public interface IImportedColumn
     string ColumnNameInSheet { get; }
     string PropertyName { get; }
 
-    bool SetValue(ISheet sheet, object entity, ICell cell);
+    bool SetValue( ISheet sheet, object entity, ICell cell );
 }
 
 public interface IImportedColumn<in TEntity> : IImportedColumn
 {
-    bool SetValue(ISheet sheet, TEntity entity, ICell cell);
+    bool SetValue( ISheet sheet, TEntity entity, ICell cell );
 }
